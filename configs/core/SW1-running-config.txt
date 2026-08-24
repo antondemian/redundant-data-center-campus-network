@@ -1,0 +1,235 @@
+!
+version 12.2(37)SE1
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname SW1
+!
+!
+!
+!
+!
+!
+ip routing
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+!
+!
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50 priority 24576
+!
+!
+!
+!
+!
+!
+interface Port-channel1
+ description PO_TO_SW2
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/1
+ description TO_SW3
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/2
+ description TO_SW4
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/3
+!
+interface FastEthernet0/4
+!
+interface FastEthernet0/5
+!
+interface FastEthernet0/6
+!
+interface FastEthernet0/7
+!
+interface FastEthernet0/8
+!
+interface FastEthernet0/9
+!
+interface FastEthernet0/10
+!
+interface FastEthernet0/11
+!
+interface FastEthernet0/12
+!
+interface FastEthernet0/13
+!
+interface FastEthernet0/14
+!
+interface FastEthernet0/15
+!
+interface FastEthernet0/16
+!
+interface FastEthernet0/17
+!
+interface FastEthernet0/18
+!
+interface FastEthernet0/19
+!
+interface FastEthernet0/20
+!
+interface FastEthernet0/21
+!
+interface FastEthernet0/22
+!
+interface FastEthernet0/23
+ description ETHERCHANNEL_TO_SW2_LINK1
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface FastEthernet0/24
+ description ETHERCHANNEL_TO_SW2_LINK2
+ switchport trunk allowed vlan 10,20,30,40,50
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface GigabitEthernet0/1
+ no switchport
+ ip address 10.0.1.2 255.255.255.252
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/2
+ no switchport
+ ip address 10.0.1.10 255.255.255.252
+ duplex auto
+ speed auto
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ description SVI_MANAGEMENT
+ mac-address 00e0.a398.d201
+ ip address 192.168.10.2 255.255.255.0
+ standby 10 ip 192.168.10.1
+ standby 10 priority 110
+ standby 10 preempt
+!
+interface Vlan20
+ description SVI_ADMIN
+ mac-address 00e0.a398.d202
+ ip address 192.168.20.2 255.255.255.0
+ ip access-group ACL_VLAN20_IN in
+ standby 20 ip 192.168.20.1
+ standby 20 priority 110
+ standby 20 preempt
+!
+interface Vlan30
+ description SVI_STUDENTI
+ mac-address 00e0.a398.d203
+ ip address 192.168.30.2 255.255.255.0
+ ip access-group ACL_VLAN30_IN in
+ standby 30 ip 192.168.30.1
+ standby 30 priority 110
+ standby 30 preempt
+!
+interface Vlan40
+ description SVI_SERVERS
+ mac-address 00e0.a398.d204
+ ip address 192.168.40.2 255.255.255.0
+ standby 40 ip 192.168.40.1
+ standby 40 priority 110
+ standby 40 preempt
+!
+interface Vlan50
+ description SVI_DMZ
+ mac-address 00e0.a398.d205
+ ip address 192.168.50.2 255.255.255.0
+ ip access-group ACL_DMZ_IN in
+ standby 50 ip 192.168.50.1
+ standby 50 priority 110
+ standby 50 preempt
+!
+router ospf 1
+ router-id 11.11.11.11
+ log-adjacency-changes
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface GigabitEthernet0/2
+ network 10.0.1.0 0.0.0.3 area 0
+ network 10.0.1.8 0.0.0.3 area 0
+ network 192.168.10.0 0.0.0.255 area 0
+ network 192.168.20.0 0.0.0.255 area 0
+ network 192.168.30.0 0.0.0.255 area 0
+ network 192.168.40.0 0.0.0.255 area 0
+ network 192.168.50.0 0.0.0.255 area 0
+!
+ip classless
+!
+ip flow-export version 9
+!
+!
+ip access-list extended ACL_VLAN30_IN
+ remark VLAN30 STUDENTI - PERMITE DNS, WEB INTERN SI EMAIL; BLOCHEAZA MGMT, FTP SI DMZ
+ deny ip 192.168.30.0 0.0.0.255 192.168.10.0 0.0.0.255
+ permit udp 192.168.30.0 0.0.0.255 host 192.168.40.11 eq domain
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.40.11 eq domain
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.40.10 eq www
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.40.10 eq 443
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.40.13 eq smtp
+ permit tcp 192.168.30.0 0.0.0.255 host 192.168.40.13 eq pop3
+ deny tcp 192.168.30.0 0.0.0.255 host 192.168.40.12 eq ftp
+ deny ip 192.168.30.0 0.0.0.255 192.168.40.0 0.0.0.255
+ deny ip 192.168.30.0 0.0.0.255 192.168.50.0 0.0.0.255
+ permit ip 192.168.30.0 0.0.0.255 any
+ip access-list extended ACL_VLAN20_IN
+ remark VLAN20 ADMIN - ACCES LA SERVERE INTERNE SI DOAR WEB CATRE DMZ
+ permit ip 192.168.20.0 0.0.0.255 192.168.40.0 0.0.0.255
+ permit tcp 192.168.20.0 0.0.0.255 host 192.168.50.10 eq www
+ permit tcp 192.168.20.0 0.0.0.255 host 192.168.50.10 eq 443
+ deny ip 192.168.20.0 0.0.0.255 192.168.50.0 0.0.0.255
+ permit ip 192.168.20.0 0.0.0.255 any
+ip access-list extended ACL_DMZ_IN
+ remark VLAN50 DMZ - PERMITE DOAR RASPUNSURI TCP STABILITE CATRE ADMIN SI DNS CATRE SERVERUL DNS
+ permit tcp 192.168.50.0 0.0.0.255 192.168.20.0 0.0.0.255 established
+ permit udp 192.168.50.0 0.0.0.255 host 192.168.40.11 eq domain
+ permit tcp 192.168.50.0 0.0.0.255 host 192.168.40.11 eq domain
+ deny ip 192.168.50.0 0.0.0.255 192.168.10.0 0.0.0.255
+ deny ip 192.168.50.0 0.0.0.255 192.168.20.0 0.0.0.255
+ deny ip 192.168.50.0 0.0.0.255 192.168.30.0 0.0.0.255
+ deny ip 192.168.50.0 0.0.0.255 192.168.40.0 0.0.0.255
+ permit ip 192.168.50.0 0.0.0.255 any
+!
+!
+!
+!
+!
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ login
+!
+!
+!
+!
+end
