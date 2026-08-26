@@ -187,7 +187,8 @@ redundant-data-center-campus-network/
 ├── docs/
 │   ├── addressing-plan.md
 │   ├── test-matrix.md
-│   └── thesis-english.pdf
+│   ├── thesis-english.pdf
+│   └── thesis-original-ro.pdf
 └── assets/
 ```
 
